@@ -1,7 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import {jwtDecode} from "jwt-decode"; // Tidak menggunakan destructuring
+import { jwtDecode } from "jwt-decode"; // Tidak menggunakan destructuring
 import { useRouter } from "next/navigation"; // Import dari next/navigation
 
 const LoginForm: React.FC = () => {
@@ -10,6 +10,15 @@ const LoginForm: React.FC = () => {
   const [message, setMessage] = useState<string>("");
   const router = useRouter(); // Inisialisasi useRouter
 
+  useEffect(() => {
+    // Pengecekan token di localStorage
+    const token = localStorage.getItem("token");
+    if (token) {
+      // Jika token ada, redirect ke dashboard
+      router.push("/dashboard");
+    }
+  }, [router]);
+
   const handleLogin = async () => {
     interface LoginResponse {
       userId: string;
@@ -17,6 +26,7 @@ const LoginForm: React.FC = () => {
       password: string;
       email: string;
     }
+
     try {
       const response = await axios.post("http://localhost:8080/auth/login", {
         email,
@@ -31,7 +41,8 @@ const LoginForm: React.FC = () => {
       const userId = decodedToken.userId;
       localStorage.setItem("userId", userId);
 
-      alert("Login berhasil!");
+      // Redirect ke dashboard setelah login berhasil
+      router.push("/dashboard");
     } catch (error) {
       setMessage("Login gagal. Pastikan email dan password benar.");
       console.error("Login gagal:", error);
