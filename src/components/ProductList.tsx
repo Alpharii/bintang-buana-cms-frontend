@@ -1,3 +1,4 @@
+// components/ProductList.tsx
 'use client';
 
 import React from 'react';
@@ -15,14 +16,14 @@ interface Product {
 
 interface ProductListProps {
   products: Product[];
-  onEdit: (product: Product) => void;
-  onDelete: (id: number) => void;
+  handleEditProduct: (product: Product) => void;
+  handleDeleteProduct: (id: number) => Promise<void>;
 }
 
 const ProductList: React.FC<ProductListProps> = ({
   products,
-  onEdit,
-  onDelete,
+  handleEditProduct,
+  handleDeleteProduct,
 }) => {
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-md">
@@ -33,25 +34,28 @@ const ProductList: React.FC<ProductListProps> = ({
             key={product.id}
             className="border border-gray-700 p-4 rounded shadow-sm bg-gray-700"
           >
-            <h3 className="text-lg font-semibold">{product.name}</h3>
+            <h3 className="text-lg font-semibold text-white">{product.name}</h3>
             <p className="text-gray-400">Price: ${product.price}</p>
             <p className="text-gray-400">Stock: {product.stock}</p>
             <p className="text-gray-500 mt-2">{product.description}</p>
-            <Image
-              src={product.image}
-              alt={product.name}
-              width={200}
-              height={200}
-            ></Image>
+            <div className="flex justify-center mt-4">
+              <Image
+                src={product.image}
+                alt={product.name}
+                width={200}
+                height={200}
+                className="object-cover rounded"
+              />
+            </div>
             <div className="flex justify-between mt-4">
               <button
-                onClick={() => onEdit(product)}
+                onClick={() => handleEditProduct(product)}
                 className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
               >
                 Edit
               </button>
               <button
-                onClick={() => onDelete(product.id)}
+                onClick={() => handleDeleteProduct(product.id)}
                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
               >
                 Delete

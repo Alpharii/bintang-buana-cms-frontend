@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; // Tidak menggunakan destructuring
 import { useRouter } from 'next/navigation';
-import { checkTokenExpiration } from '@/utils/checkToken.';
+import { checkTokenExpiration } from '@/utils/checkToken';
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState<string>('');
