@@ -1,21 +1,23 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { jwtDecode } from "jwt-decode"; // Tidak menggunakan destructuring
-import { useRouter } from "next/navigation"; // Import dari next/navigation
+'use client';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode'; // Tidak menggunakan destructuring
+import { useRouter } from 'next/navigation';
+import { checkTokenExpiration } from '@/utils/checkToken.';
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [message, setMessage] = useState<string>("");
-  const router = useRouter(); // Inisialisasi useRouter
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
+  const router = useRouter();
 
   useEffect(() => {
-    // Pengecekan token di localStorage
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     if (token) {
-      // Jika token ada, redirect ke dashboard
-      router.push("/dashboard");
+      const isTokenExpired = checkTokenExpiration(token);
+      if (!isTokenExpired) {
+        router.push('/dashboard');
+      }
     }
   }, [router]);
 
@@ -28,24 +30,28 @@ const LoginForm: React.FC = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:8080/auth/login", {
+      const response = await axios.post('http://localhost:8080/auth/login', {
         email,
         password,
       });
 
       const { token } = response.data;
-      localStorage.setItem("token", token);
+      localStorage.setItem('token', token);
 
-      // Decode token
+      const isTokenExpired = checkTokenExpiration(token);
+      if (isTokenExpired) {
+        setMessage('Token expired, silakan login ulang.');
+        return;
+      }
+
       const decodedToken: LoginResponse = jwtDecode(token);
       const userId = decodedToken.userId;
-      localStorage.setItem("userId", userId);
+      localStorage.setItem('userId', userId);
 
-      // Redirect ke dashboard setelah login berhasil
-      router.push("/dashboard");
+      router.push('/dashboard');
     } catch (error) {
-      setMessage("Login gagal. Pastikan email dan password benar.");
-      console.error("Login gagal:", error);
+      setMessage('Login gagal. Pastikan email dan password benar.');
+      console.error('Login gagal:', error);
     }
   };
 
@@ -56,7 +62,6 @@ const LoginForm: React.FC = () => {
           Login
         </h2>
         <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
-          {/* Email Input */}
           <div>
             <input
               type="email"
@@ -66,8 +71,6 @@ const LoginForm: React.FC = () => {
               className="bg-gray-700 text-white border border-gray-600 p-3 rounded-md w-full"
             />
           </div>
-
-          {/* Password Input */}
           <div>
             <input
               type="password"
@@ -77,13 +80,9 @@ const LoginForm: React.FC = () => {
               className="bg-gray-700 text-white border border-gray-600 p-3 rounded-md w-full"
             />
           </div>
-
-          {/* Message */}
           {message && (
             <div className="text-red-500 text-sm text-center">{message}</div>
           )}
-
-          {/* Login Button */}
           <div className="flex justify-center">
             <button
               onClick={handleLogin}
@@ -93,12 +92,10 @@ const LoginForm: React.FC = () => {
             </button>
           </div>
         </form>
-
-        {/* Register Link */}
         <div className="text-center mt-4">
           <span className="text-gray-400">Dont have an account?</span>
           <button
-            onClick={() => router.push("/register")} // Navigasi ke halaman register
+            onClick={() => router.push('/register')}
             className="text-blue-400 hover:text-blue-500 font-semibold"
           >
             Register here

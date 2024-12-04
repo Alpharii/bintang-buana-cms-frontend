@@ -1,15 +1,15 @@
-import axios from "axios";
+import axios from 'axios';
 
 const getAuthToken = () => {
-    return localStorage.getItem('token'); // Sesuaikan dengan cara Anda menyimpan token
-  };
+  return localStorage.getItem('token'); // Sesuaikan dengan cara Anda menyimpan token
+};
 
 export const getAuthHeaders = () => {
-    const token = getAuthToken();
-    if (token) {
-      return { Authorization: `Bearer ${token}` };
-    }
-    return {}; // Jika token tidak ada, kembalikan objek kosong
+  const token = getAuthToken();
+  if (token) {
+    return { Authorization: `Bearer ${token}` };
+  }
+  return {}; // Jika token tidak ada, kembalikan objek kosong
 };
 
 export const getUserId = (): number => {
@@ -25,7 +25,7 @@ export const getUserName = async (id: number): Promise<string> => {
     console.log(response.data.user.username);
     return response.data.user.username;
   } catch (error) {
-    console.error("Error fetching user data:", error);
-    return "";
+    console.error('Error fetching user data:', error);
+    return '';
   }
 };
