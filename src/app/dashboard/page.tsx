@@ -112,6 +112,20 @@ const Dashboard = () => {
     }
   };
 
+  const handleCancel = () => {
+    setShowModal(false); // Menutup modal
+    setNewProduct({
+      name: '',
+      price: 0,
+      description: '',
+      image: '',
+      discount: 0,
+      stock: 0,
+    }); // Reset form to initial state
+    setIsEditing(false); // Reset editing flag
+    setCurrentProductId(null); // Reset current product ID
+  };
+
   const handleEditProduct = (product: Product) => {
     setNewProduct(product);
     setCurrentProductId(product.id);
@@ -266,7 +280,7 @@ const Dashboard = () => {
 
               <div className="mt-4 flex space-x-4 justify-end">
                 <button
-                  onClick={() => setShowModal(false)}
+                  onClick={() => handleCancel()}
                   className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
                 >
                   Cancel
