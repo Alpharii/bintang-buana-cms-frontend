@@ -1,4 +1,3 @@
-// components/ProductList.tsx
 'use client';
 
 import React from 'react';
@@ -18,12 +17,14 @@ interface ProductListProps {
   products: Product[];
   handleEditProduct: (product: Product) => void;
   handleDeleteProduct: (id: number) => Promise<void>;
+  handleAddToCart: (product: Product) => void; // Tambahkan prop ini
 }
 
 const ProductList: React.FC<ProductListProps> = ({
   products,
   handleEditProduct,
   handleDeleteProduct,
+  handleAddToCart,
 }) => {
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-md">
@@ -53,6 +54,12 @@ const ProductList: React.FC<ProductListProps> = ({
                 className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
               >
                 Edit
+              </button>
+              <button
+                onClick={() => handleAddToCart(product)}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+              >
+                Add to Cart
               </button>
               <button
                 onClick={() => handleDeleteProduct(product.id)}

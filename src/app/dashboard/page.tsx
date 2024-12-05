@@ -1,16 +1,18 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getUserName } from '@/api/auth';
+import { getUserId, getUserName } from '@/api/auth';
 import {
   getProducts,
   createProduct,
   updateProduct,
   deleteProduct,
 } from '@/api/product';
+import{ createCartItem, getAllCartItems, deleteCartItem, updateCartItem } from '@/api/cart';
 import ProductList from '@/components/ProductList';
 import ProductModal from '@/components/ProductModal'; // Import komponen modal
 import { checkTokenExpiration } from '../../utils/checkToken';
+import CartList from '@/components/CartList';
 
 const Dashboard = () => {
   interface Product {
@@ -23,8 +25,19 @@ const Dashboard = () => {
     stock: number;
   }
 
+  interface CartItem {
+    id: number; // Tambahkan id untuk mencocokkan data dari API
+    userId: number;
+    productId: number;
+    name: string; // Tambahkan properti ini untuk keperluan tampilan
+    price: number; // Tambahkan untuk menampilkan harga produk
+    quantity: number;
+  }
+
   const [username, setUsername] = useState<string>('');
   const [products, setProducts] = useState<Product[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const userId = getUserId();
   const [newProduct, setNewProduct] = useState({
     id: 0,
     name: '',
@@ -54,13 +67,19 @@ const Dashboard = () => {
       router.push('/login');
       return;
     }
-
+    
     const userId = userIdString ? parseInt(userIdString, 10) : null;
+
+    if(!userId){
+      router.push('/login');
+      return;
+    }
+
 
     if (userId) {
       getUserName(userId).then((name) => setUsername(name));
     }
-
+    getAllCartItems(userId).then((cartItems) => setCartItems(cartItems));
     fetchProducts();
   }, [router]);
 
@@ -167,6 +186,58 @@ const Dashboard = () => {
     setNewProduct({ ...newProduct, [field]: e.target.value });
   };
 
+
+  const handleAddToCart = async (product: Product) => {
+    const existingItem = cartItems.find((item) => item.productId === product.id);
+
+    if (existingItem) {
+      // Jika item sudah ada, perbarui kuantitas
+      const updatedQuantity = existingItem.quantity + 1;
+      await updateCartItem(existingItem.id, updatedQuantity);
+      setCartItems((prev) =>
+        prev.map((item) =>
+          item.id === existingItem.id
+            ? { ...item, quantity: updatedQuantity }
+            : item
+        )
+      );
+    } else {
+      // Jika item belum ada, tambahkan item baru ke cart
+      const newCartItem = await createCartItem({
+        userId,
+        productId: product.id,
+        quantity: 1,
+      });
+
+      if (newCartItem) {
+        setCartItems((prev) => [
+          ...prev,
+          {
+            id: newCartItem.id,
+            userId: newCartItem.userId,
+            productId: newCartItem.productId,
+            name: product.name,
+            price: product.price,
+            quantity: newCartItem.quantity,
+          },
+        ]);
+      }
+    }
+  };
+
+  const handleRemoveFromCart = async (id: number) => {
+    await deleteCartItem(id);
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleUpdateQuantity = async (id: number, quantity: number) => {
+    if (quantity < 1) return; // Pastikan kuantitas tidak kurang dari 1
+    await updateCartItem(id, quantity);
+    setCartItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+    );
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold text-white mb-4">Dashboard</h1>
@@ -181,6 +252,7 @@ const Dashboard = () => {
         products={products}
         handleEditProduct={handleEditProduct}
         handleDeleteProduct={handleDeleteProduct}
+        handleAddToCart={handleAddToCart}
       />
 
       {/* Modal */}
@@ -194,6 +266,12 @@ const Dashboard = () => {
         handleUpdateProduct={handleUpdateProduct}
         handleCancel={handleCancel}
         handleInputChange={handleInputChange}
+      />
+
+      <CartList
+        cartItems={cartItems}
+        handleRemoveFromCart={handleRemoveFromCart}
+        handleUpdateQuantity={handleUpdateQuantity}
       />
     </div>
   );
